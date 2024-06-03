@@ -1,0 +1,621 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.8in]{geometry}
+\usepackage[]{amsfonts, amssymb, amsmath, float, hyperref,fancyheadings, graphicx}
+\pagestyle{fancy}
+\lhead{Linear Algebra and matrix computation}
+\chead{Larry128}
+\rhead{15 January 2024}
+\renewcommand{\footrulewidth}{0.4pt}
+\usepackage{CJKutf8} 
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=3
+}
+\lstset{style=mystyle}
+\pagestyle{fancy}
+\renewcommand{\footrulewidth}{0.4pt}
+\newcommand{\zh}[1]{\begin{CJK}{UTF8}{gbsn}#1\end{CJK}}
+\parindent 0px
+\begin{document}
+\tableofcontents
+\section{Basic stuff skipped}
+In this notes, we will skip some basic concepts in linear algebra, since it has been taught in high school and its really fundamental. The skipped concepts are \textbf{basic operations of matrices} \textit{(e.g., row reduction operations, Guassian Eliminations)}, \textbf{reduced echelon form}, \textbf{linear dependence}, \textbf{vector spaces} etc. Normally, linear algebra is split into two courses- Linear Algebra I \& II. I have no idea why HKUST have linear algebra I \& II in one single course \texttt{(MATH2121)}. Additionally, I will also add some knowledges I learn in \texttt{MATH3322} matrix computation. In this notes, We will start from eigenvalues and eigenvalues, to singular value decomposition (SVD), which are basically the content of linear algebra II. For the following content, we will use the following notations.
+\begin{figure} [H]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+Notations		&Meaning\\
+\hline
+$\det(A)$&		$determinant\, of\, A$\\
+\hline
+$Col(A)$&		$column\, space \,of\, A$\\
+\hline
+$Row(A)$&		$row\, space\, of\, A$\\
+\hline
+$Nul(A)$&		$nullspace\, of\, A$\\
+\hline
+\end{tabular}
+\end{figure}
+\newpage
+\section{Eigenvalues and eigenvector}
+\begin{itemize}
+	\item Basic ideas of eigenvalues and eigenvector\\
+	Let $A$ be a $n \times n$ square matrix. If $0 \neq v \in \mathbb{R}^n$ and $\lambda$ satisfy $Av = \lambda v$, then $v$ and $\lambda$ are the eigenvectors and eigenvalues  of $A$ respectively. Note that
+	\begin{align*}
+		Av				&=	\lambda v\\
+		Av - \lambda v 	&=	0\\
+		Av - \lambda I v&=	0\\
+		(A - \lambda I)v&= 0
+	\end{align*}
+	Since $v \neq 0$, $Nul(A - \lambda I) \neq 0$ , then the matrix $A- \lambda I$ must be singular (non-invertible). Then, it implies that $det(A - \lambda I) = 0$.
+	
+	\item An example\\
+	If we want to find the eigenvalues of $A = 
+	\begin{bmatrix}
+	1& 2\\
+	3& 4
+	\end{bmatrix}$, 
+	we can simply apply the formula $det(A - \lambda I) = 0$.
+	\begin{align*}
+		det(A - \lambda I) &= 0\\
+		det(\begin{bmatrix}
+			1& 2\\
+			3& 4
+		\end{bmatrix} - \lambda 
+		\begin{bmatrix}
+		1& 0\\
+		0& 1
+		\end{bmatrix})) &= 0\\
+		det(\begin{bmatrix}
+			1& 2\\
+			3& 4
+		\end{bmatrix} - 
+		\begin{bmatrix}
+		\lambda& 0\\
+		0& \lambda\\
+		\end{bmatrix}) &= 0\\
+		det(\begin{bmatrix}
+		1-\lambda& 2\\
+		3&		4-\lambda\\
+		\end{bmatrix})&=0\\
+		(1-\lambda)(4-\lambda)-3\times2 &= 0\\
+		4-\lambda-4\lambda+\lambda^2 -6 &=0\\
+		\lambda^2-5\lambda-2&= 0\\
+		\lambda&= \dfrac{-(-5) \pm \sqrt{(-5)^2 -4 (1) (-2)}}{2(1)}\\
+		\lambda&= \dfrac{5 + \sqrt{33}}{2} \,or\, \dfrac{5 - \sqrt{33}}{2}
+	\end{align*}
+	
+	\item Eigenspaces\\
+	Once we get all the eigenvalues of the matrix with above method, we can now compute the eigenvectors one by one for each eigenvalues. Notice that each eigenvalue has its own eigenspace (the set of eigenvectors). We need to consider those eigenspace separately to compute the eigenvectors.\\\\
+	\textbf{IMPORTANT: if $\lambda$ is found to be an eigenvalue of $A$, then the $\lambda-$eigenspace is just the subspace $Nul(A-\lambda I)$. For eigenvector, we need to compute a basis for this subspace.}\\\\
+	Since the eigenvalues we got in the previous example is too disgusting, let's consider another example. Let's say we have given another matrix $A = 
+	\begin{bmatrix}
+	1& 6\\
+	5& 2
+	\end{bmatrix}$. Consider $det(A-\lambda I) = 0$,
+	\begin{align*}
+	(1-\lambda )(2- \lambda )- 6(5) &=0\\
+	\lambda&= 7 \,or\, -4
+	\end{align*}
+	For \textbf{7-eigenspace}, consider\\
+	\begin{align*}
+		A - 7I &= 
+		\begin{bmatrix}
+		-6& 6\\
+		5& -5
+		\end{bmatrix}\\
+		& \sim \begin{bmatrix}
+		1& -1\\
+		0& 0
+		\end{bmatrix}
+	\end{align*}
+	Therefore, the eigenspace $Nul(A - 7I)$ is an one-dimensional subspace, and its basis is $\{
+	\begin{bmatrix}
+	1\\
+	1
+	\end{bmatrix}
+	\}$. As a result, any linear combination of this basis is a eigenvector (e.g., $
+	\begin{bmatrix}
+	1\\
+	1
+	\end{bmatrix}
+	$, $\begin{bmatrix}
+	1.2\\
+	1.2
+	\end{bmatrix}$, etc.)\\
+	Similarly, for \textbf{-4-eigenspace}, consider $Nul(A+4I)$,
+	\begin{align*}
+	A- 4I &= 
+	\begin{bmatrix}
+	5& 6\\
+	5& 6
+	\end{bmatrix} \sim 
+	\begin{bmatrix}
+	5& 6\\
+	0& 0
+	\end{bmatrix}
+	\end{align*}
+	Therefore, the basis for -4-eigenspace = $\{ 
+	\begin{bmatrix}
+	-6\\
+	5
+	\end{bmatrix}\}$. Its eigenvectors can be $
+	\begin{bmatrix}
+	-6\\
+	5
+	\end{bmatrix}$, or $
+	\begin{bmatrix}
+	-12\\
+	10
+	\end{bmatrix}
+	$, etc.
+	
+	\item Characteristic equation\\
+	When we are calculating the eigenvalues of a $n\times n$ matrix, we solve $\det(A-xI)=0$, we now call it \textit{characteristic equation}. By \textit{fundamental theorem of Algebra}, for $\lambda _1, \lambda _2, ..., \lambda _r \in \mathbb{C}, 0<r \leqslant n$, $\det(A-x I)= (x- \lambda _1)(x- \lambda _2)(x- \lambda _3)...(x- \lambda _r)=0$\\\\
+	\textbf{Proposition:} $A$ is singular if and only if $A$ has $0$ as one of its eigenvalues.\\
+	Proof: Since it is a 'if and only if' statement, we need to proof in both directions.\\
+	If $A$ is singular, then $\det A = 0$. Thus, $0$ is a solution for $\det(A-xI)=0$, so $A$ has $0$ as its eigenvalue.\\
+	If $A$  has $0$ as its eigenvalue, there exists some $0 \neq v \in \mathbb{R}^n$ such that $Av=0$, then more than one vectors in $\mathbb{R}^n$ is mapped to the zero vector. The linear transformation with augmented matrix $A$ is not one-to-one. Thus, $A$ is singular.\\
+	
+	\item Eigenvectors with distinct eigenvalues are \textbf{linearly independent}\\
+	\textbf{Proposition:} Let $v_1, v_2, ..., v_r,\, where\, r \leqslant n$ be the eigenvectors of $A$, and  $\lambda_i$ be the eigenvalues such that $Av_i = \lambda_i v_i$. If $\lambda _1, \lambda _2, ...,\lambda _r$ are all distinct, then $v_1, v_2, ..., v_r$ are linearly independent.\\
+	Proof: For this statement, we will prove that by \textit{contradiction}.\\
+	Suppose $v_1, v_2, ..., v_r$ are linearly dependent. There must exist a $p \in \mathbb{R}^n$ such that $v_1, v_2, ..., v_p$ are linearly independent, but $v_{p+1}$ is a linear combination of $v_1, v_2, ..., v_p$, that is:
+	\begin{align*}
+	v_{p+1}&=c_1 v_1 + c_2 v_2 +...+ c_p v_p,\, where\, c_1, c_2,..., c_p \in \mathbb{R}\,\, (1)\\
+	\lambda _{p+1} v_{p+1} &= c_1 \lambda _{p+1} v_1 + c_2 \lambda _{p+1} v_2 +...+ c_p \lambda _{p+1} v_p \,\, (2)
+	\end{align*}
+	By $(1)$ and the proposition, 
+	\begin{align*}
+	\lambda _{p+1} v_{p+1} &= Av_{p+1}\\
+	&= c_1 A v_1 + c_2 A v_2 +...+ c_p A v_p\\
+	&= c_1 \lambda_1 v_1 + c_2 \lambda_2 v_2 +...+ c_p \lambda_p v_p \,\, (3)
+	\end{align*}
+	$(3)-(2)$,
+	\begin{align*}
+	0&=\lambda _{p+1} v_{p+1}- \lambda _{p+1} v_{p+1}\\
+	&=c_1 (\lambda_1 -\lambda _{p+1}) v_1 + c_2 (\lambda_2 -\lambda _{p+1}) v_2 +...+ c_p (\lambda_p -\lambda _{p+1}) v_p
+	\end{align*}
+	Since $v_1, v_2, ..., v_p$ are linearly independent, then
+	$$c_1 (\lambda_1 -\lambda _{p+1})=c_2 (\lambda_2 -\lambda _{p+1})=...=c_p (\lambda_p -\lambda _{p+1})=0$$
+	But since all eigenvalues are distinct, $\lambda _i - \lambda _{p+1} \neq 0, \, for\, i=1,2,...,p.$ Then we obtain $c_1=c_2=...=c_p=0$. By $(1)$, we have $c_{p+1} =0$. However, it contradicts to our assumption. As a result, Suppose $v_1, v_2, ..., v_r$ are linearly independent.
+	
+	\item Multiplicity
+\end{itemize}
+
+\newpage
+\section{Vector Norm}
+\begin{enumerate}
+\item{Definition} (Vector Norm)\\
+A function $\mathbb{R}^{n} \mapsto \mathbb{R}$, denoted by $||\vec{x}||$ for any $\vec{x} \in \mathbb{R}^{n}$, which satisfy the following:
+\begin{enumerate}
+\item{$$\forall \vec{x} \in \mathbb{R}^{n}, ||\vec{x}|| > 0 $$ ,and $$||\vec{x} || = 0 \iff \vec{x} = \vec{0}$$}
+\item{$$||\alpha \vec{x}|| = \alpha ||\vec{x}||$$}
+\item{$$||\vec{x} + \vec{y}|| \leq ||\vec{x}|| + ||\vec{y}||$$}
+\end{enumerate}
+\item{Examples}
+\begin{enumerate}
+\item{Euclidean norm (2-norm)}
+$$||\vec{x}||_{2} = \left(\sum_{i = 1}^{n} x_{i}^{2}\right)^{\frac{1}{2}}$$
+\item{Manhattan norm (1-norm)}
+$$||\vec{x}||_{1} = \sum_{i = 1}^{n} |x_{i}|$$
+\item{Max norm/ infinity norm}
+$$||\vec{x}||_{\infty} = \max_{1 \leq i \leq n} |x_{i}|$$
+\item{p-norm}
+$$||\vec{x}||_{p} = \left(\sum_{i = 1}^{n} x_{i}^{p}\right)^{\frac{1}{p}}$$
+\end{enumerate}
+\end{enumerate}
+
+\newpage
+\section{Matrix Norm}
+\begin{enumerate}
+\item{Definition} (Matrix Norm)\\
+A function $\mathbb{R}^{m \times n} \mapsto \mathbb{R}$, denoted by $||A||$ for any $A \in \mathbb{R}^{m \times n}$, which satisfy the following:
+\begin{enumerate}
+\item{$$\forall A \in \mathbb{R}^{m \times n}, ||A|| > 0 $$ ,and $$||A || = 0 \iff A = 0_{m \times n}$$}
+\item{$$||\alpha A|| = \alpha ||A||$$}
+\item{$$||A + B|| \leq ||A|| + ||B||$$}
+\end{enumerate}
+\item{Trivial Examples}
+\begin{enumerate}
+\item{Frobenius norm (vector 2-norm)}
+$$||A||_{F} = \left(\sum_{i=1}^{m} \sum_{j=1}^{n} a_{ij}^2\right)^{\frac{1}{2}}$$
+\item{Vector p-norm}
+$$||A||_{vec, p} = \left(\sum_{i=1}^{m} \sum_{j=1}^{n} a_{ij}^p \right)^{\frac{1}{p}}$$
+\end{enumerate}
+\item{Matrix p-norm as the largest magnifying factor of A from $\mathbb{R}^{n}$ to $\mathbb{R}^{m}$}\\
+$$||A||_{p} = \max_{\vec{0} \neq \vec{x} \in \mathbb{R}^{n}} \frac{||A \vec{x}||_{p}}{||\vec{x}||_{p}} = \max_{||\vec{x}||_{p} = 1} ||A \vec{x}||_{p}$$
+\item{Examples}
+\begin{enumerate}
+\item{matrix 2-norm}
+$$||A||_{2} =  \sigma_{1} = \text{ maximum singular value of \textit{A}}$$
+\item{matrix 1-norm}
+$$||A||_{1} = \max_{1 \leq j \leq n} ||\vec{a}_{(j)}||_{1} = \text{ maximum vector 1-norm of columns of \textit{A}}$$
+\item{matrix $\infty$-norm}
+$$||A||_{\infty} = \max_{1 \leq i \leq n} ||\vec{a}_{(i)}^{T}||_{1} = \text{ maximum vector 1-norm of rows of \textit{A}}$$
+\end{enumerate}
+\end{enumerate}
+
+\newpage
+\section{LU Decomposition without pivoting}
+\begin{enumerate}
+\item{LU Decomposition is just basically Gaussian Elimination}
+\item{The Algorithm}
+\begin{lstlisting}[language=matlab]
+for k = 1:n
+	A(k,k) = A(k,k) - A(k, 1:k-1) A(1:k-1, k)
+	A(k, k+1:n) = A(k, k+1:n) - A(k, 1:k-1) A(1:k-1, k+1:n)
+	A(k+1:n, k) = A(k+1:n, k) - A(k+1:n, 1:k-1) A(1:k-1, k)
+	A(k+1:n, k) = A(k+1:n, k)/A(k, k)
+end
+\end{lstlisting}
+\item{An example}\\
+Find the LU Decomposition of $$A = 
+\begin{bmatrix}
+	2& 1& -1\\
+	4& 5& -3\\
+	-2& 5& -2	
+\end{bmatrix}$$
+\begin{itemize}
+\item[•]At $k =1$,
+\begin{lstlisting}[language=matlab]
+A(1, 1:n) = A(1, 1:n)
+A(2:n, 1) = A(2:n, 1)/ A(1,1)
+\end{lstlisting}
+$$A = 
+\begin{bmatrix}
+	2& 1& -1\\
+	4/2& 5& -3\\
+	-1/2& 5& -2	
+\end{bmatrix}
+= \begin{bmatrix}
+	2& 1& -1\\
+	2& 5& -3\\
+	-1& 5& -2	
+\end{bmatrix}$$
+\item[•]At $k=2$,
+\begin{lstlisting}[language=matlab]
+A(2, 2:n) = A(2, 2:n) - A(2,1) A(1, 2:n)
+A(3:n, 2) = A(3:n, 2) - A(3:n, 1) A(1: 2)
+A(3:n, 2) = A(3:n, 2)/ A(2,2)
+\end{lstlisting}
+$$A=
+\begin{bmatrix}
+	2& 1& -1\\
+	2& 5-2& -3+2\\
+	-1& (5+1)/(5-2)& -2	
+\end{bmatrix} =
+\begin{bmatrix}
+	2& 1& -1\\
+	2& 3& -1\\
+	-1& 2& -2	
+\end{bmatrix}
+$$
+\item[•]At $k=3$,
+\begin{lstlisting}[language=matlab]
+A(3,3) = A(3,3) - A(3,1:2) A(1:2, 3)
+\end{lstlisting}
+$$A=
+\begin{bmatrix}
+	2& 1& -1\\
+	2& 3& -1\\
+	-1& 2& -2 -[-1(-1)+2(-1)]
+\end{bmatrix} = 
+\begin{bmatrix}
+	2& 1& -1\\
+	2& 3& -1\\
+	-1& 2& -1
+\end{bmatrix}
+$$
+\end{itemize}
+As a result, we get $$L = \begin{bmatrix}
+	1& 0& 0\\
+	2& 1& 0\\
+	-1& 2& 1
+\end{bmatrix}, U = \begin{bmatrix}
+	2& 1& -1\\
+	0& 3& -1\\
+	0& 0& -1
+\end{bmatrix}$$
+
+\item{Computational cost}\\
+\texttt{Lines 2} and \texttt{3} can be combined as 
+\begin{lstlisting}[language=matlab]
+A(k,k:n) = A(k,k:n) - A(k,1:k-1) A(1:k-1, k:n)
+\end{lstlisting}
+It involves 
+\begin{itemize}
+\item[•] a vector-matrix multiplication (\texttt{2(k-1)(n-k+1)} flops)
+\item[•] a vector subtraction (\texttt{n-k+1} flops)
+\end{itemize}
+In total, there are \texttt{2(k-1)(n-k+1)+n-k+1 = (2k-1)(n-k+1)} flops for \texttt{lines 2,3}.\\
+\texttt{Lines 4} and \texttt{5} can be combined as 
+\begin{lstlisting}[language=matlab]
+A(k+1:n, k) = (A(k+1:n, k) - A(k+1:n, 1:k-1) A(1:k-1, k))/ A(k, k)
+\end{lstlisting}
+It involves 
+\begin{itemize}
+\item[•] a vector-matrix multiplication (\texttt{2(n-k)(k-1)} flops)
+\item[•] a vector subtraction (\texttt{n-k} flops)
+\item[•] a vector division (\texttt{n-k} flops)
+\end{itemize}
+In total, there are \texttt{2(n-k)(k-1)+ 2(n-k) = 2k(n-k)} flops for \texttt{lines 4,5}.\\
+Since \texttt{k = 1,2,..., n}, we need to sum them up,
+\begin{align*}
+\text{Total number of flops}&= \sum_{k=1}^{n} [(2k-1)(n-k+1) + 2k(n-k)]\\
+&= \sum_{k=1}^{n} (4nk -4k^2 +3k -n -1)\\
+&= O(n^{3})
+\end{align*}
+\end{enumerate}
+
+\newpage
+\section{LU Decomposition with pivoting}
+\begin{enumerate}
+\item{Reasons for pivoting}
+\begin{itemize}
+\item[•] If \texttt{A(k, k) = 0}, then the algorithm cannot continue.
+\item[•] If \texttt{A(k, k)} is very small, then division by \texttt{A(k, k)} will have large error due to rounding-off in computers.
+\end{itemize}
+\item{Partial pivoting}
+$$PA = LU$$
+Consider the original LU algorithm without pivoting,
+\begin{lstlisting}[language=matlab]
+for k = 1:n
+	A(k,k) = A(k,k) - A(k, 1:k-1) A(1:k-1, k)
+	A(k, k+1:n) = A(k, k+1:n) - A(k, 1:k-1) A(1:k-1, k+1:n)
+	A(k+1:n, k) = A(k+1:n, k) - A(k+1:n, 1:k-1) A(1:k-1, k)
+	A(k+1:n, k) = A(k+1:n, k)/A(k, k)
+end
+\end{lstlisting}
+Note that \texttt{lines 3, 4} can be interchanged since the result won't change no matter you calculate the row or column first.
+\begin{lstlisting}[language=matlab]
+for k = 1:n
+	A(k,k) = A(k,k) - A(k, 1:k-1) A(1:k-1, k)
+	A(k+1:n, k) = A(k+1:n, k) - A(k+1:n, 1:k-1) A(1:k-1, k)
+	A(k, k+1:n) = A(k, k+1:n) - A(k, 1:k-1) A(1:k-1, k+1:n)
+	A(k+1:n, k) = A(k+1:n, k)/A(k, k)
+end
+\end{lstlisting}
+Then, between \texttt{lines 3, 4}, we do row swapping to ensure the value in the pivot position is absolutely large, and use a matrix $P$ to record the row swapping.
+\begin{lstlisting}[language=matlab]
+P = I
+for k = 1:n
+	A(k,k) = A(k,k) - A(k, 1:k-1) A(1:k-1, k)
+	A(k+1:n, k) = A(k+1:n, k) - A(k+1:n, 1:k-1) A(1:k-1, k)
+	j_k = argmax_{k<=j<=n} {|A(j, k)|}
+	if j_k != k
+		swap A(k, 1:n) and A(j_k, 1:n)
+		swap P(k, 1:n) and P(j_k, 1:n)
+	end
+	A(k, k+1:n) = A(k, k+1:n) - A(k, 1:k-1) A(1:k-1, k+1:n)
+	A(k+1:n, k) = A(k+1:n, k)/A(k, k)
+end
+\end{lstlisting}
+\item{Example}
+Find the LU decomposition with partial pivoting of $$A = \begin{bmatrix}
+2 & 1 & -1\\
+4 & 5 & -3\\
+-2& 5 & -2
+\end{bmatrix}$$
+\begin{itemize}
+\item[•]At $k=1$,
+\begin{lstlisting}[language=matlab]
+A(2:3, 1) = A(2:3, 1)
+j_k = 2
+swap A(1, 1:3) and A(j_k , 1:3)
+swap P(1, 1:3) and P(j_k, 1:3)
+A(2:3, 1) = A(2:3, 1)/A(1,1)
+\end{lstlisting}
+$$A = \begin{bmatrix}
+4 & 5 & -3\\
+2/4 & 1 & -1\\
+-2/4& 5 & -2
+\end{bmatrix} = \begin{bmatrix}
+4 & 5 & -3\\
+1/2 & 1 & -1\\
+-1/2& 5 & -2
+\end{bmatrix}, P = \begin{bmatrix}
+0 &1 &0 \\
+1& 0& 0\\
+0& 0& 1\\
+\end{bmatrix}$$
+\item[•] At $k=2$,
+\begin{lstlisting}[language=matlab]
+A(2:3, 2) = A(2:3, 2) - A(2:3, 1) A(1, 2)
+j_3 = 3
+swap A(2, 1:3) and A(j_k , 1:3)
+swap P(2, 1:3) and P(j_k, 1:3)
+A(2, 3) = A(2, 3) - A(2,1) A(1,3)
+A(3, 2) = A(3, 2)/A(2, 2)
+\end{lstlisting}
+\begin{align*}
+\begin{bmatrix}
+4 & 5 & -3\\
+1/2 & 1 & -1\\
+-1/2& 5 & -2
+\end{bmatrix} & \to \begin{bmatrix}
+4 & 5 & -3\\
+1/2 & 1-5/2 & -1\\
+-1/2& 5+5/2 & -2
+\end{bmatrix}  &= \begin{bmatrix}
+4 & 5 & -3\\
+1/2 & -3/2 & -1\\
+-1/2& 15/2 & -2
+\end{bmatrix}\\
+\to \begin{bmatrix}
+4 & 5 & -3\\
+-1/2& 15/2 & -2 \\
+1/2 & -3/2 & -1
+\end{bmatrix} &\to \begin{bmatrix}
+4 & 5 & -3\\
+-1/2& 15/2 & -2 -3/2 \\
+1/2 & -3/2 & -1
+\end{bmatrix} &= \begin{bmatrix}
+4 & 5 & -3\\
+-1/2& 15/2 & -7/2 \\
+1/2 & -(3/2)/(15/2) & -1
+\end{bmatrix} \\ \to \begin{bmatrix}
+4 & 5 & -3\\
+-1/2& 15/2 & -7/2 \\
+1/2 & -1/5 & -1
+\end{bmatrix} = A ,&& P = \begin{bmatrix}
+0 & 1 & 0\\
+0 & 0 & 1\\
+1& 0 & 0
+\end{bmatrix}
+\end{align*}
+\item[•] At $k=3$,
+\begin{lstlisting}[language=matlab]
+A(3,3) = A(3, 3) - [A(3, 1) A(1, 3) + A(3, 2) A(2, 3)]
+\end{lstlisting}
+$$A = \begin{bmatrix}
+4 & 5 & -3\\
+-1/2& 15/2 & -7/2 \\
+1/2 & -1/5 & -1-[(-3)(1/2)+(-1/5)(-7/2)]
+\end{bmatrix} = \begin{bmatrix}
+4 & 5 & -3\\
+-1/2& 15/2 & -7/2 \\
+1/2 & -1/5 & -1/5
+\end{bmatrix}, P = \begin{bmatrix}
+0 & 1 & 0\\
+0 & 0 & 1\\
+1& 0 & 0
+\end{bmatrix}$$
+\end{itemize}
+Therefore, we have $$L = \begin{bmatrix}
+1 &0 & 0\\
+-1/2& 1 & 0 \\
+1/2 & -1/5 & 1
+\end{bmatrix},
+U = \begin{bmatrix}
+4 & 5 & -3\\
+0& 15/2 & -7/2 \\
+0 & 0 & -1/5
+\end{bmatrix}, P = \begin{bmatrix}
+0 & 1 & 0\\
+0 & 0 & 1\\
+1& 0 & 0
+\end{bmatrix}
+$$
+\end{enumerate}
+
+\newpage
+\section{Symmetric Positive Definite Matrix}
+\begin{enumerate}
+\item Definition. (Symmetric Positive Definite) A matrix $A$ is SPD if 
+\begin{enumerate}
+\item $A$ is symmetric. $A^{T} = A$
+\item $A$ is positive definite. $\vec{x}^{T} A \vec{x} > 0$ with $\vec{0} \neq \vec{x} \in \mathbb{R}^{n} $
+\end{enumerate}
+\item Properties 
+\begin{enumerate}
+\item If $A = CC^{T}$ for some symmetric positive semi-definite $C$ and $C$ is non-singular, then $A$ is SPD.
+\item If $A$ is SPD, then all sub-matrix of $A$ is SPD also.
+\item If $A$ is SPD, then all diagonal entries of $A$ are positive.
+\item All eigenvalues of a SPD matrix is positive.\\
+\textit{Proof}:
+We can choose $\vec{x}$ be the eigenvector of $A$, then $\vec{x}^T A \vec{x} = \lambda \vec{x}^T \vec{x} > 0 \implies \lambda > 0$
+\end{enumerate}
+\item Examples of SPD matrices
+\begin{enumerate}
+\item $A = \begin{bmatrix}
+2& 1\\
+1& 2
+\end{bmatrix}$\\
+\textit{Proof}: 
+\begin{enumerate}
+\item A is symmetric obviously.
+\item \begin{align*}
+\vec{x}^{T} A \vec{x} &= \begin{bmatrix}
+x_1 & x_2
+\end{bmatrix}  \begin{bmatrix}
+2& 1\\
+1& 2
+\end{bmatrix} \begin{bmatrix}
+x_1 \\
+ x_2
+\end{bmatrix}\\
+&= 2x_1^2 + 2x_2^2 +2x_1 x_2 \\
+&= x_1^2 +x_2^2 + (x_1 +x_2)^2 > 0
+\end{align*}
+\end{enumerate}
+\item 1-D discrete Laplacian matrix
+$A = \begin{bmatrix}
+2& -1& 	&\\
+-1& 2 & \ddots&	\\
+&\ddots &\ddots&-1\\
+&&-1&2\\
+\end{bmatrix}$\\
+\textit{Proof}:
+\begin{enumerate}
+\item $A^T =A$
+\item \begin{align*}
+\vec{x}^T A \vec{x} &=  \begin{bmatrix}
+x_1 & x_2 & \dots & x_n
+\end{bmatrix} \begin{bmatrix}
+2& -1& 	&\\
+-1& 2 & \ddots&	\\
+&\ddots &\ddots&-1\\
+&&-1&2\\
+\end{bmatrix} \begin{bmatrix}
+x_1\\
+x_2\\
+\vdots\\
+x_n
+\end{bmatrix}\\
+& = 2 \sum_{i=1}^{n} x_i^2 - \sum_{i=2}^{n} x_{i} x_{i-1} - \sum_{i=1}^{n-1} x_{i+1} x_{i} \\
+& = 2 \sum_{i=1}^{n} x_i^2 - 2 \sum_{i=1}^{n-1} x_{i+1} x_{i}\\
+& = \sum_{i=1}^{n-1}(x_{i+1} - x_{i})^2 + x_1^2 +x_n^2  > 0
+\end{align*}
+\end{enumerate}
+\end{enumerate}
+\end{enumerate}
+
+\newpage
+\section{Cholesky Decomposition}
+\begin{enumerate}
+\item{Algorithm}\\
+Let $A \in \mathbb{R}^{n \times n}$ be a SPD matrix. (Cholesky Decomposition is only for SPD matrix) Then, there exists a decomposition $$A = L L^T$$, where $L \in \mathbb{R}^{n \times n}$ is lower triangular with positive diagonals. The algorithm is as the following.
+\begin{lstlisting}[language = matlab]
+for k=1:n
+	A(k, k) = A(k, k) - A(k, 1:k-1) A(k, 1:k-1)^T
+	A(k, k) = (A(k, k))^(1/2)
+	A(k+1:n, k) = A(k+1:n, k) - A(k+1:n, 1:k-1) A(k+1:n, 1:k-1)^T
+	A(k+1:n, k) = A(k+1:n, k)/ A(k, k)
+end
+\end{lstlisting}
+\item{Computational Cost}\\
+For each iteration, \\
+\texttt{line 2}: $2(k-1)^2 + 1$\\
+\texttt{line 3}: $1$\\
+\texttt{line 4}: $2(n-k)^2 (k-1)+ (n-k) = (n-k)(2(n-k)(k-1) +1)$\\
+\texttt{line 5}: $n-k$.\\
+In total, there are $\sum_{k=1}^{n} 2(k-1)^2 + 1+1+(n-k)(2(n-k)(k-1) +2) = \frac{1}{3}n^3 + o(n^2) = O(n^3)$.\\
+\textit{Remark:} the computational cost of Cholesky is about one half of a standard LU.
+\end{enumerate}
+
+\newpage
+\section{Orthogonal Projector}
+Let $S \subset \mathbb{R}^n$ be a subspace of $\mathbb{R}^n$.
+The orthogonal projector of $\vec{x} \in \mathbb{R}^n$ onto $S$ is $U U^{T} \vec{x}$, where $U$'s columns are the orthonormal basis of $S$.
+\end{document}
