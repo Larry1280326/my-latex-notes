@@ -1,0 +1,229 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.8in]{geometry}
+\usepackage[]{amsfonts, amssymb, amsmath, float, hyperref,fancyheadings, graphicx, derivative}
+\pagestyle{fancy}
+\lhead{Machine Learning}
+\chead{Larry128}
+\rhead{COMP4211}
+\renewcommand{\footrulewidth}{0.4pt}
+\setcounter{tocdepth}{3} % set TOC
+\newcommand{\indep}{\perp \!\!\! \perp}
+
+% codeblocks
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=3
+}
+\lstset{style=mystyle}
+\lstdefinestyle{customc}{
+  language=C++,
+  % Add other settings here
+}
+
+%common math symbols
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\ddx}{\dfrac{d}{dx}}
+\newcommand{\regressf}{$f(\mathbf{x}; \mathbf{w})$ }
+\newcommand{\lossf}{$L(\mathbf{w}; S)$ }
+
+% asymptotic notations
+\newcommand\BigO[1]{$O($#1$)$}
+\newcommand\BigOmega[1]{$\Omega($#1$)$}
+\newcommand\BigTheta[1]{$\Theta($#1$)$}
+\newcommand\pddx[2]{\frac{\partial{#1}}{\partial{#2}}}
+
+% pgfplots
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18, width=8cm}
+\usepackage{geometry}
+\geometry{
+a4paper,
+total={170mm,257mm},
+left=20mm,
+top=20mm,
+}
+
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+            
+        \Huge
+        \textbf{COMP4211}
+            
+        \vspace{0.5cm}
+        \LARGE
+        Machine Learning
+            
+        \vspace{1.5cm}
+            
+        Larry128
+            
+        \vfill
+            
+        A summary notes for revision
+            
+        \vspace{0.8cm}
+                
+        \Large
+        Fall 2024-2025
+            
+    \end{center}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Linear Regression}
+\subsection{Basic Ideas of Regression}
+\begin{enumerate}
+\item Given a training set $S = \{(x^{(l)}, y^{(l)})\}_{l=1}^{N}$ of $N$ labelled examples of input-output pairs.
+\item A \textbf{Regression Function} \regressf uses $S$ such that the predicted output $f(\mathbf{x^{(l)}}; \mathbf{w})$ for each input $\mathbf{x}^{l}$ such that $f(\mathbf{x}^{(l)}; \mathbf{w}) \approx \mathbf{y}^l$.
+\item (multi-output regression) When the output $\mathbf{y}$ is a vector, it's a multi-output regression.
+\item We denote the output by $y$ if the output is univariate.
+\item The input $\mathbf{x} = (x_1 , \cdots, x_d) ^T$ is $d$-dimensional.
+\end{enumerate}
+
+\subsection{Linear Regression Function}
+\begin{enumerate}
+\item If the regression function is linear, then 
+\begin{align*}
+f(\mathbf{x}; \mathbf{w}) &= w_{0} + w_1 x_1 + \cdots + w_d x_d\\
+&= \begin{bmatrix}
+w_0& w_1& \cdots& w_d
+\end{bmatrix} \begin{bmatrix}
+1\\
+x_1\\
+\vdots\\
+x_d
+\end{bmatrix} &= \begin{bmatrix}
+1 & x_1& \cdots& x_d
+\end{bmatrix} \begin{bmatrix}
+w_0\\
+w_1\\
+\vdots\\
+w_d
+\end{bmatrix}\\
+&= \mathbf{w}^{T} \mathbf{\tilde{x}} &= \mathbf{\tilde{x}}^{T} \mathbf{w}
+\end{align*}
+\item $w_0$ is the \textit{bias} term which serves as an offset.
+\item The learning problem is to find the best $\mathbf{w}$ according to performance measure on $S$.
+\end{enumerate}
+
+\subsection{Loss Function}
+\begin{enumerate}
+\item A common way to learn the parameter $\mathbf{w}$ of \regressf is to define a loss function \lossf
+\item The most common loss function is the \textbf{squared loss}
+\begin{align*}
+L(\mathbf{w}; S) &= \sum_{l=1}^{N} (f(\mathbf{x}^{(l)} ;\mathbf{w})- \mathbf{y}^{(l)})^2\\
+&= \sum_{l=1}^{N} (w_0 + w_1 x_1 ^{(l)}+ \cdots + w_d x_d ^{(l)} - y^{(l)})^2
+\end{align*}
+\item We may also define the loss function by \textbf{mean} rather than the sum $$L(\mathbf{w}; S) = \dfrac{1}{N} \sum_{l=1}^{N} (f(\mathbf{x}^{(l)} ;\mathbf{w})- \mathbf{y}^{(l)})^2$$
+\item A special case ($d=1$)\\
+Squared loss: $$L(\mathbf{w}; S) = \sum_{l=1}^{N}(w_0 +w_1 x_1 ^{(l)} - y^{(l)})^2$$
+We can find the unique optimal solution $\tilde{\mathbf{w}} = \begin{bmatrix}
+w_0\\w_1
+\end{bmatrix}$ that minimizes \lossf using the method of least squares.\\
+First, we take the derivatives of \lossf with respect to $w_0$ and $w_1$ and set them to $0$.
+\begin{align*}
+\pddx{L}{w_0} &= 2\sum_{l=1}^{N} (w_0 +w_1 x_1 ^{(l)} - y^{(l)}) =0  \iff \sum_{l=1}^{N}(w_0 +w_1 x_1 ^{(l)}) = \sum_{l=1}^{N} y^{(l)} \iff N w_0 + \sum_{l=1}^{N} w_1 x_1 ^{(l)} = \sum_{l=1}^{N} y^{(l)}\\
+\pddx{L}{w_1} &= 2\sum_{l=1}^{N} (w_0 +w_1 x_1 ^{(l)} - y^{(l)})x_1 ^{(l)}=0 \iff w_0 \sum_{l=1}^{N} x_1 ^{(l)} + w_1 \sum_{l=1}^{N} (x_{1}^{(l)})^2 = \sum_{l=1}^{N}x_1 ^{(l)} y^{(l)}
+\end{align*}
+Then, we have a system of linear equations of two unknown $w_0$, $w_1$. We can write it in matrix form.
+\begin{align*}
+\mathbf{A} \mathbf{w} = \begin{bmatrix}
+N &\sum_{l} x_{1} ^{l}\\
+\sum_{l} x_{1} ^{l} &\sum_{l} (x_{1} ^{l})^2
+\end{bmatrix} \begin{bmatrix}
+w_0\\w_1
+\end{bmatrix} = \begin{bmatrix}
+\sum_{l} y^{(l)}\\ \sum_{l} x_1 ^{(l)} y^{(l)}
+\end{bmatrix} = \mathbf{b}
+\end{align*}
+Assuming $\mathbf{A}$ is invertible, the least squares estimate is $$\tilde{\mathbf{w}} = \mathbf{A}^{-1} \mathbf{b}$$
+
+\item General case ($d \geq 1$)
+\begin{enumerate}
+\item (First approach) We express the input and output of $N$ examples as follows
+\begin{align*}
+\mathbf{X} = \begin{bmatrix}
+1& x_1 ^{l}&\cdots & x_{d}^{1}\\
+1& x_1 ^{2}&\cdots & x_{d}^{2}\\
+\vdots\\
+1& x_1 ^{N}&\cdots & x_{d}^{N}
+\end{bmatrix}, &&\mathbf{y} = \begin{bmatrix}
+y^{(1)}\\
+y^{(2)}\\
+\vdots\\
+y^{(N)}
+\end{bmatrix}
+\end{align*}
+Then we can express the matrix form as follows (proof skipped)
+$$\mathbf{A w = X^T X w = X^T y = b}$$
+Therefore, the least squares estimate is $$\tilde{\mathbf{w}} = \mathbf{(X^T X)^{-1} X^T y}$$, assuming $\mathbf{X^T X}$ is invertible
+\item (Second approach) First write $\mathbf{X w - y}$ as
+\begin{align*}
+\mathbf{Xw - y} &= \begin{bmatrix}
+1& x_1 ^{l}&\cdots & x_{d}^{1}\\
+1& x_1 ^{2}&\cdots & x_{d}^{2}\\
+\vdots\\
+1& x_1 ^{N}&\cdots & x_{d}^{N}
+\end{bmatrix} \begin{bmatrix}
+w_0\\
+w_1\\
+\vdots\\
+y_d
+\end{bmatrix} - \begin{bmatrix}
+y^{(1)}\\
+y^{(2)}\\
+\vdots\\
+y^{(N)}
+\end{bmatrix}\\
+&= \begin{bmatrix}
+w_0 + w_1 x_1 ^{(1)} + \cdots + w_d x_d ^{1} - y^{(1)}\\
+w_0 + w_1 x_1 ^{(2)} + \cdots + w_d x_d ^{2} - y^{(2)}\\
+\vdots\\
+w_0 + w_1 x_1 ^{(N)} + \cdots + w_d x_d ^{N} - y^{(N)}\\
+\end{bmatrix}
+\end{align*}
+Then the squared loss is just the square of \textbf{L-2 norm} of $\mathbf{Xw -y}$ $$L(\mathbf{w}; S) = ||\mathbf{Xw - y}||^2$$
+We can further write the squared loss as
+\begin{align*}
+L(\mathbf{w}; S) &= ||\mathbf{Xw - y}||^2\\
+&= (\mathbf{Xw - y})^T (\mathbf{Xw - y})\\
+&= (\mathbf{w^T X^T - y^T})(\mathbf{Xw - y})\\
+&= \mathbf{w^T X^T X w - 2 y^T X w + y^T y}
+\end{align*}
+After that, we can take the derivative with respect to $\mathbf{w}$ \begin{align*}
+&\pddx{L}{\mathbf{w}} = 2 \mathbf{X^T X w} - 2 \mathbf{X^T y} =0\\
+\iff& \mathbf{X^T X w} = \mathbf{X^T y}\\
+\iff& \tilde{\mathbf{w}}= \mathbf{(X^T X)^{-1} X^T y}
+\end{align*}
+\item Complexity considerations\\
+To compute $\tilde{\mathbf{w}}$, we need to invert $\mathbf{X^T X} \in \mathbb{R}^{(d+1) \times (d+1)}$. $Le Gall$ is the fastest algorithm to compute that with $O(n^{2.3728639})$, instead of $O(n^3)$ for Cholesky, LU, Gaussian elimination.
+\end{enumerate}
+
+\end{enumerate}
+\end{document}
