@@ -86,7 +86,7 @@ top=20mm,
         \vspace{0.8cm}
                 
         \Large
-        Fall 2024-2025
+        HKUST, Fall 2024-2025
             
     \end{center}
 \end{titlepage}
@@ -279,7 +279,7 @@ Proof that $\sum_{i=1}^{n} i = 1 +2 +3 + \cdots + (n-1) + n = \Theta (n^2)$
 \item Approach 1: use formula $\sum_{i=1}^{n} i = \dfrac{n(1+n)}{2} = \Theta (n^2)$
 \item Approach 2
 \begin{enumerate}
-\item Step 1: proof $\sum_{i=1}^{n} i = O(n^2)$\\
+\item Step 1: proof $\sum_{i=1}^{n} i = O(n^2)$
 \begin{align*}
 \sum_{i=1}^{n} i &= 1 +2 +3 + \cdots + (n-1) + n\\
 & \leq n + n + ... + n\\
@@ -321,6 +321,42 @@ k&$0$& $\dfrac{1}{2^k} = \dfrac{1}{n}$& 1\\
 \hline
 \end{tabular}\\\\
 Therefore, $H_n < \sum_{i=0}^{k} 1 = k +1 = \log_2 n +1 = O(\log n)$ and $H_n > \sum_{i=0}^{k-1} \dfrac{1}{2} +0 = \dfrac{k}{2} = \frac{\log_2 n}{2} = \Omega (\log n)$. So, $H_{n} = \sum_{i=1}^{n} \frac{1}{i} = \Theta(\log n)$.
+\end{enumerate}
+\item Past exam questions\\
+We have two algorithms, A and B. Let $T_A (n)$ and $T_B (n)$ denote the time complexities of algorithm A and B respectively, with respect to the input size n. 
+\begin{enumerate}
+\item $T_{A} (n) = \Theta (n^{1.5}), T_{B} (n) = \Theta (\frac{n^{2}}{(\log n)^3})$\\
+Note that there must exist $n_{0}$ such that for all $n \geq n_{0}$, \begin{align*}
+(\log n)^3 \leq n^{1/2} \iff n^{1.5} \leq \frac{n^2}{(\log n)^3}
+\end{align*}
+We can conclude that algorithm A is faster.
+\item $T_{A} (n) = O (n^{2}), T_{B} (n) = \Omega (2^{\sqrt{n}})$\\ Obviously algorithm A is faster since A is polynomial while B is exponential.
+\item $T_{A} (n) = O (\log n), T_{B} (n) = \Theta (2^{\log_2 \log_2 n})$\\ Note that $2^{\log_2 \log_2 n} = \log_2 n = \Theta
+(\log n)$, so we don't have enough information to justify.
+\item $T_{A} (n) = \Theta ((\log n)^3), T_{B} (n) = \Theta (\sqrt[3]{n})$\\ Obviously algorithm A is faster since A is logarithmic while B is polynomial.
+\item $T_{A} (n) =O(n^4), T_{B} (n) = O(n^3)$\\
+Since both are upper bounds, we cannot conclude anything.
+\item $T_{A} (n) =\Omega(n^3), T_{B} (n) = O(n^{2.8})$\\
+B is faster since the lower bound of A is greater than the upper bound of B.
+\item $T_{A} (n) =\Theta(n^3), T_{B} (n) = \Theta(4^{\log_5 n})$\\ Consider $4^{\log_5 n} = n^{\log_5 4} = \Theta(n)$, we cannot conclude anything from that.
+\item (Stirling's formula) Proof that $\log(n!) = \Theta (n \log n)$.\\
+First we proof that $\log (n!) = O(n \log n)$.
+\begin{align*}
+\log (n!) &= \log (n (n-1) \cdots 2 \cdot 1)\\ 
+&= \log n + \log (n-1) + \cdots + \log 1 \\
+&\leq \log n + \log n + \cdots + \log n \\
+&= n \log n = O(n \log n)
+\end{align*}
+Then we proof that $\log (n!) = \Omega (n \log n)$.
+\begin{align*}
+\log (n!) &= \log (n (n-1) \cdots 2 \cdot 1)\\ 
+&= \log n + \log (n-1) + \cdots + \log 1 \\
+&\geq \log n + \log (n-1) + \cdots + \log (\frac{n}{2}) \\
+&\geq \log \frac{n}{2} + \log \frac{n}{2} + \cdots + \log \frac{n}{2}\\
+&= \frac{n}{2} \log \frac{n}{2}\\
+&= \frac{n}{2} (\log n -\log 2) = \Omega(n \log n)
+\end{align*}
+Finally, we can conclude that $\log (n!) = \Theta (n \log n)$
 \end{enumerate}
 \end{enumerate}
 
@@ -422,9 +458,9 @@ i = 5& ( 1 3 5 6 8 2 )$\rightarrow$( 1 3 5 6 2 8 )$\rightarrow$( 1 3 5 2 6 8 )$\
 \hline
 \end{tabular}\\\\
 \textbf{Running time of insertion sort}\\
-Total cost of insertion sort/ number of comparison is \textit{at most} $$\sum_{i=2}^{n} (i-1) = \dfrac{n(n-1)}{2}$$
+Total cost of insertion sort/ number of comparison is \textit{at most} $$\sum_{i=2}^{n} (i-1) = \dfrac{(n)(n-1)}{2} = \Theta (n^2)$$
 . This worst case happens when the input array in descending order.\\
-Note: unlike selection sort which always uses $\dfrac{n(n-1)}{2}$ comparisons for each array of size $n$, the number of comparisons (running time) of Insertion Sort depends on the input array, and ranges between $n-1$ and $\dfrac{n(n-1)}{2}$.\\\\
+Note: unlike selection sort which always uses $\dfrac{n(n-1)}{2}$ comparisons for each array of size $n$, the number of comparisons (running time) of Insertion Sort depends on the input array, and ranges between $n-1$ and $\dfrac{n(n-1)}{2}$.\\$n-1$ when the input array is originally sorted.\\
 \textbf{Proof of correctness of insertion sort}\\
 \begin{tabular}{|p{4cm}|c|p{6cm}|}
 \hline
@@ -450,6 +486,121 @@ else insertion_sort(A, n);
 \end{lstlisting}
 It has a very small probability that wild-guess sort is faster than insertion sort but most likely it's slower.
 \end{enumerate}
+\end{enumerate}
+\end{enumerate}
+
+\subsection{Algorithm Evaluation}
+\begin{enumerate}
+\item Measure Criteria
+\begin{enumerate}
+\item Memory (space complexity)
+\item Running time (time complexity) \textit{(We use this.)}
+\end{enumerate}
+\item Methods to measure
+\begin{enumerate}
+\item Empirical: depends on actual implementation, hardware
+\item Analytical: depends only on the algorithms \textit{(We use this.)}
+\end{enumerate}
+\item Analysis of Algorithm\\
+To illustrate them, we use \textbf{insertion sort} as an example.
+\begin{enumerate}
+\item Best-Case Analysis\\
+If the input array is sorted originally, then the running time is just $T(n) = n -1 = \Theta (n)$. We call this "Best-Case Analysis".
+\item Worst-Case Analysis \textit{(Commonly used)}\\
+If the input array is inversely sorted, then the running time is $T(n) = \dfrac{n(n-1)}{2} = \Theta (n)$. We call this "Worse-Case Analysis".
+\item Average-Case Analysis\\
+We assume each of the $n!$ permutations of the $n$ numbers is equally likely, then intuitively (but not rigorously) $T(n) = \sum_{i=2}^{n} \dfrac{i-1}{2} = \dfrac{n (n-1)}{4} = \Theta (n^2)$. We call this "Average-Case Analysis".
+\end{enumerate}
+\end{enumerate}
+
+\section{Divide and Conquer}
+\subsection{Basic Ideas with Examples}
+Main idea of \textbf{Divide and Conquer} is that we solve a problem of size $n$ by breaking it into one or more smaller problems of size less than $n$. Then, we solve the smaller problems \textit{recursively} and combine their solutions to solve the original large problem. Here are some examples.
+\begin{enumerate}
+\item Binary Search\\
+Input: a sorted (ascending/ descending) array $A[1 \cdots n]$ and an element $x$\\
+Output: Return the index (position) of $x$, if $x$ is in $A$; otherwise return \textit{nil}.\\
+The algorithm:
+\begin{lstlisting}[language = C++]
+int BinarySearch(int A[], int p, int r, int x){
+	if (p > r) return -1;
+	int q = (p + r)/2;
+	if (A[q] = x) return q;
+	if (x < A[q]) BinarySearch(A, p, q-1, x);
+	else BinarySearch(A, p+1, r, x);
+}
+\end{lstlisting}
+Then, we can call the function in this way:
+\begin{lstlisting}[language = C++]
+int i = BinarySearch(A, 0, sizeof(A)/sizeof(int), x);
+\end{lstlisting}
+Analysis of the algorithm:\\
+Let $T(n)$ be the number of comparisons needed for an array with $n$ elements. $$T(n) = \begin{cases} 
+T(n/2) +2& \text{if } n > 1\\
+1& \text{if } n =1
+\end{cases}$$Then  $T(n/2) $ since the size of input is reduced by half. $+ 2$ is for the comparisons in lines $4$ and $5$. The comparison in line $2$ is omitted as we assume $x$ is always in $A$. We can solve the recurrence relation by the \textit{expansion method}.
+\begin{align*}
+T(n) &= T(n/2) + 2\\
+&= T(n/2^2) + 2 \cdot 2\\
+&= T(n/2^3) + 3 \cdot 2\\
+&=\cdots\\
+&= T(n/2^i) + 2i\\
+&=\cdots& \frac{n}{2^{i}} = 1 \iff i = \log_2 n\\
+&= T(n/2^{\log_2 n}) + 2\log_2 n\\
+&= T(1) + 2\log_2 n\\
+&= 1+ 2\log_2 n = \Theta (\log n)
+\end{align*}
+
+\item Rotated Sorted Array\\
+Let $A[1 \cdots n]$ be a sorted array of $n$ distinct numbers that has been rotated $n-k$ steps for some unknown integer $k \in [1, n-1]$. That is, $A[1 \cdots k]$ is sorted in increasing order, and $A[k+1 \cdots n]$ is also sorted in increasing order, and $A[n] < A[1]$. The following array $A$ is an example of $n=16$ elements with $k=10$. $$A=[9, 13, 16, 18, 19, 23, 28, 31, 37, \mathbf{42}, 0, 1, 2, 5, 7, 8]$$ We can design an $O(\log n)$-time algorithm to find the value of $k$.
+\begin{lstlisting} [language = C++]
+int findk(int A[], int p, int q){
+	int m = (p+q)/2;
+	if (A[m] > A[m+1]) return m; //base case: found the value
+	if (A[m] >= A[1]) return findk(A, m+1, q); //search on the right hand side
+	return findk(A, p, m-1);  //search on the left hand side
+}
+\end{lstlisting}
+Then, we can call the algorithm like this
+\begin{lstlisting} [language = C++]
+int k = findk(A, 1, sizeof(A)/size(int));
+\end{lstlisting}
+Analysis of the algorithm:\\
+It's similar to binary search $$T(n) = T(n/2) + c \implies T(n) = O(\log n)$$
+
+\item Rotated Sorted Array (continued)\\
+We can also design an $O(\log n)$-time algorithm that for any given $x$, find $x$ in the rotated sorted array, or report that it does not exist.
+\begin{lstlisting} [language=C++]
+int findx(int A[], int x){
+	int k = findk(A, 1, n);
+	if (x >= A[1]) return BinarySearch(A, 1, k, x); // search in  A[1...k]
+	else return BinarySearch(A, k+1, n, x); // search in A[k+1 ... n]
+}
+\end{lstlisting}
+Analysis of the algorithm:\\
+This algorithm consist of one comparison, one \texttt{findk}, and \texttt{BinarySearch}. Therefore, $T(n) = O(\log n)$.
+
+\item Finding the last 0\\
+We are given an array $A[1 \cdots n]$ that contains a sequences of $0$ followed by a sequence of $1$ (e.g., $0001111111$). A contains at least one $0$ and one $1$.
+\begin{enumerate}
+\item Design an $O(\log n)$-time algorithm that finds the position $k$ of the last $0$, i.e., $A[k] = 0$ and $A[k+1] =1$.
+\begin{lstlisting} [language = C++]
+int findk(int A[], int p, int r){
+	int mid = (p+r)/2;
+	if (A[mid] ==0 && A[mid +1] == 1) return mid;
+	if (A[mid] == 0) findk(A, mid + 1, r); // search on the right hand side
+	else findk(A, p, mid); // search on the left hand side
+}
+\end{lstlisting}
+\item Suppose that $k$ is much smaller than $n$. Design an $O(\log k)$-time algorithm that finds the position $O$ of the last $0$. (Hint: re-use solution of part (a).)
+\begin{lstlisting}[language = C++]
+i = 1;
+while (A[i] == 0) {
+	i = min(2*i, n);
+}
+findk(A, i/2, i);
+\end{lstlisting}
+The while loop will stop when it finds a $1$. Since each time we double the value of $i$, the while loop performs $2^i = k \implies i = \log_{2} k$ iterations. The first $1$ occurs somewhere between the positions $A[i/2 +1]$ and $A[i]$. To find it, we can call \texttt{findk(A, i/2, i)}, which has cost $\log (k/2) = O(\log k)$. Therefore, the total cost is $O(\log k)$.
 \end{enumerate}
 \end{enumerate}
 \end{document}
