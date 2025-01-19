@@ -358,6 +358,25 @@ Then we proof that $\log (n!) = \Omega (n \log n)$.
 \end{align*}
 Finally, we can conclude that $\log (n!) = \Theta (n \log n)$
 \end{enumerate}
+\item Tutorials questions
+\begin{enumerate}
+\item Suppose $T_1 (n)= O(f(n))$ and $T_2 (n) = O(f(n))$. Which of the following are true?
+\begin{enumerate}
+\item $T_1 (n) + T_2 (n) = O(f(n))$\\
+Trivially true.
+\item $\dfrac{T_1 (n)}{T_2 (n)} = O(1)$\\
+False. Proof by counterexample: $T_1 (n) = n^2$, $T_2 (n) = n$, then $\frac{T_1 (n)}{T_2 (n)}= \frac{n^2}{n} = n \neq O(1)$.
+\item $T_1 (n) = O(T_2 (n))$\\
+False. Proof by counterexample: $T_1 (n) = n^2$, $T_2 (n) = n$, then $T_1 (n) = n^2 \neq O(n)$.
+\end{enumerate}
+\item Let $f(n)$ be a function. Suppose that, for all $i > 0$, $T_i (n) = O(f(n))$. Define $$g_{k(n)}= O(f(n))$$
+\begin{enumerate}
+\item For fixed $k$, $g_k (n)= O(f(n))$\\
+True. Obviously $g_2 (n) = T_1 (n) + T_2 (n) = O(f(n))$. Assume that $g_{k-1} (n) = O(f(n))$. It is obvious that $g_{k} (n) = g_{k-1} (n) + T_{k} (n) = O(f(n))$.
+\item Define $g(n) = g_n (n)$. Is $g(n) = O(f(n))$? Is $g(n) = O(nf(n))$?\\
+False. Proof by counterexample: we see that $g(n) = \sum_{i=1}^{n} T_i (n)$. Set $T_i (n) = i \cdot n$ and $f(n) = n$. Check that $T_i (n) = O(n) = O(f(n))$ for fixed $i \geq 1$. Then, $g_k (n) = \sum_{i=1}^{k} T_i (n) = \sum_{i=1}^{k} i \cdot n = n \cdot \dfrac{k(k+1)}{2}$. We can deduce that $g(n) = g_n (n) = n \cdot \dfrac{n(n+1)}{2}$. Therefore, indeed $g(n) \neq O(n)$ and $g(n) \neq O(n^2)$. 
+\end{enumerate}
+\end{enumerate}
 \end{enumerate}
 
 \subsection{Introduction to Algorithms}
