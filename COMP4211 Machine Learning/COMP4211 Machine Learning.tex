@@ -9,7 +9,7 @@
 \setcounter{tocdepth}{3} % set TOC
 \newcommand{\indep}{\perp \!\!\! \perp}
 
-% codeblocks
+% codeblocksı
 \usepackage{listings}
 \usepackage{xcolor}
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -500,5 +500,341 @@ $$\pddx{x^{[3](q)}}{w^{[3]}_{lk}} = z_{k}^{[2](q)}$$
 \Delta w^{[1]}_{ji} &= -\eta \pddx{L}{w^{[1]}_{ji}} = \eta \sum_{q=1}^{N} \delta^{[1](q)}_j x^{(q)}_i
 \end{align*}
 \end{enumerate}
+
+\item Common Activation Functions
+\begin{enumerate}
+    \item Sigmoid $\sigma (x) = \frac{1}{1 + e^{-x}}$
+    \item Hyperbolic tangent $\tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}$
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{axis}[
+                axis lines = middle,
+                xlabel = \(x\),
+                ylabel = {\(\sigma(x)\) and \(\tanh(x)\)},
+                xmin = -6, xmax = 6,
+                ymin = -1.2, ymax = 1.2,
+                xtick={-6,-5,...,6},
+                ytick={-1,0,1},
+                legend pos=outer north east,
+                grid = both,
+                domain=-6:6,
+            ]
+            % Sigmoid function
+            \addplot[blue, thick] {1/(1 + exp(-x))};
+            \addlegendentry{Sigmoid \(\sigma(x) = \frac{1}{1 + e^{-x}}\)}
+        
+            % Tanh function
+            \addplot[red, thick] {tanh(x)};
+            \addlegendentry{Tanh \(\tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}\)}
+            \end{axis}
+        \end{tikzpicture}
+    \end{center}
+    \textit{Remarks:} 
+    \begin{enumerate}
+        \item Relationship between the two activation functions
+        \begin{align*}
+            \tanh (x) &= \frac{e^x - e^{-x}}{e^x + e^{-x}} \\
+            &= 2 \cdot \sigma(2x) -1\\
+            &= \frac{2}{1+e^{-2x}} -1
+        \end{align*}
+        \item Between these two activation functions, $\tanh$ should be a better choice for the hidden layers since it can take both positive and negative values (also zero) as its output for more comprehensive representation.
+    \end{enumerate}
+\end{enumerate}
+\item Vanishing Gradient Problem\\
+When we differentiate the activation functions $\sigma (x)$ and $\tanh (x)$, we get
+\begin{align*}
+    \sigma'(x) &= \frac{e^{-x}}{(1+e^{-x})^2}& \tanh'(x)&=2 \cdot \sigma'(2x)\\
+    &= \frac{e^x}{(e^x +1)^2} &&= \frac{2e^{2x}}{(e^{2x}+1)^2}
+\end{align*}
+We can see that when $x$ is large in magnitude, both the gradients of $\sigma (x)$ and $\tanh (x)$ are very close to $0$. That is, their output does not chnage much when the input becomes very large in magnitude. We call them \emph{Saturating Activation Functions}.
+
+If the activation function $g$ used in the neurons is saturating, the vanishing gradient problem may arise (especially when there are many hidden layers).
+\begin{align*}
+    \delta^{[2](q)}_k &= \sum_{l} \delta^{[3](q)}_{l} w^{[3]}_{lk} g^{[2]'}_{k} (x^{[2](q)}_{k})\\
+    \delta^{[1](q)}_j &= \sum_{k} \delta^{[2](q)}_{k} w^{[2]}_{kj} g^{[1]'}_{j} (x^{[1](q)}_{j})
+\end{align*}
+The weight changes $\delta^{[2](q)}_k$ and $\delta^{[1](q)}_j$ will be very small, and thus the weight will not be updated probably. The techniques for overcomming the vanishing gradient problem in deep neural networks will be discussed in the next topic.
+
+\item Stochastic Gradient Descent
+\begin{enumerate}
+    \item For feedforward neural network with one or more hidden layers, the loss function is no longer convex, i.e., local minima exist.
+    \item While (batch) gradient descent computes the gradients by summing over all $N$ examples in the training set, Stochastic Gradient Descent (SGD) sums over a (usually much smaller) mini-batch of the trainign examples at a time.
+    \item SGD can be regarded as a Stochastic Approximation of (batch) gradient descent with faster convergence.
+    \item SGD is a more favorable alternative when the training set is large.
+    \item SGD is also good at avoiding being trapped in a local minimum because SGD has more randomness than (batch) gradient descent, making SGD more likely to jump out of a local minimum.
+\end{enumerate}
+
+\item Regularization
+\begin{enumerate}
+    \item Regularized loss function based on $L_2$ regularization: $$L_{\lambda}(\mathbf{W}; \mathcal{S}) = L(\mathbf{W}; \mathcal{S}) + \frac{\lambda}{2} \sum_{w\text{ except bias terms}} w^2$$
+    \item Weight update rule for $w$ (except the bias term) $$\Delta w = - \eta \pddx{L_{\lambda}}{w} = \eta \pddx{L}{w} - \eta \lambda w$$, where the second term is called the \emph{weight decay} term because it moves the weight towards zero.
+\end{enumerate}
+
+\item Momentum\\
+We used it to stablise the SGD learning process.
+\begin{enumerate}
+    \item A \emph{momentum} term can be added to the weight update rule for $w$ to improve the speed of convergence $$\Delta w = - (1-\beta) \eta \pddx{L}{w} + \eta \Delta w^{\text{prev}}$$, where $L$ refers to the loss for a mini-batch, the momentum parameter $\beta$ is generally taken to be between 0.5 and 1 and $\Delta w^{\text{prev}}$ refers to the previous weight update.
+    \begin{center}
+        \begin{tikzpicture}[thick,->, scale=1]
+            \coordinate (A) at (0, 0);
+            \coordinate (B) at (1, 2);
+            \coordinate (C) at (2, 4);
+            \coordinate (D) at (1.2, -0.5);
+            \coordinate (F) at (2.2, 1.5);
+    
+            \draw[->] (A) -- (B) node[midway, left] {\(\Delta w^{\text{prev}}\)};
+            \draw[->] (B) -- (D) node[midway, right] {\(-\eta \frac{dL}{dw}\)};
+            \draw[->] (B) -- (F) node[midway, right] {\(- (1 - \beta) \eta \frac{dL}{dw} + \beta \Delta w^{\text{prev}}\)};
+            \draw[dashed, ->] (B) -- (C);
+        \end{tikzpicture}
+    \end{center}
+    \item The momentum term is more crucial for SGD to make the learning process more stable by smoothing the weight changes over time.
+    \item It has been shown mathematically that the momentum term plays a role similar to the \emph{mass} in damped harmonic oscillators by bringing the system closer to critical damping.
+\end{enumerate}
+\end{enumerate}
+
+\section{Deep Neural networks}
+\subsection{Challenges of trainign deep neural networks}
+\begin{enumerate}
+    \item The vanishing gradient problem makes the lower layers (i.e., the layers closer to the input layer) of a deep neural network very difficult to train, because the gradient of the often get smaller and smaller in magnitude as the BP algorithm progresses down to the lower layer.
+    \item The many network weights in a deep neural network make it easy to overfit the training data.
+    \item It would be extremely time consuming to train a large network especially when simple optimizers are used.
+\end{enumerate}
+\subsection{Non-saturating activation functions}
+\begin{enumerate}
+    \item Rectifier Linear Unit (ReLU) \\ ReLU is a processing unit that uses the rectifier $$g(x) =  \max(0, x) = \begin{cases} x & \text{ if } x \geq 0\\ 0 & \text{ otherwise} \end{cases}$$ as the activation function. ReLU alleviates the vanishing gradient problem because it does not saturate for positive input values.
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{axis}[
+                axis lines = middle,
+                xlabel = \(x\),
+                ylabel = {\(g(x)\)},
+                xmin = -4, xmax = 4,
+                ymin = -1, ymax = 5,
+                xtick={-4,-3,...,4},
+                ytick={0,1,2,3,4,5},
+                legend pos=outer north east,
+                grid = both,
+                domain=-4:4,
+                samples=100,
+            ]
+            \addplot[blue, thick] {max(0,x)};
+            \addlegendentry{ReLU \(g(x) = \max(0, x)\)}
+            \end{axis}
+        \end{tikzpicture}
+    \end{center}
+    \begin{enumerate}
+        \item Another advantage of using the rectifier activation is that its derivative is easy to compute.
+        \begin{align*}
+            g(x) &= \begin{cases} x & \text{ if } x \geq 0\\ 0 & \text{ otherwise} \end{cases}& g'(x) &=\begin{cases} 1 & \text{ if } x \geq 0\\ 0 & \text{ otherwise} \end{cases}
+        \end{align*}
+        Meanwhile, computation of derivative of sigmoid function requires floating point computing.
+        \item However, the vanishing gradient problem is not completely addressed because the gradient is $0$ for negative inpute values. When this happens, the output is $0$ and the gradient is $0$, making the \emph{dying ReLU} unlikely to come back to life again.
+        \item Also, although the function is continous, it is not differentiable when the input is $0$. Nevertheless, this usually does not cause any problem in practice as we can use some programming tricks to solve this problem.
+        \item A smooth approximation to the rectifier is the softplus function $$g(x) = \log(1+e^x)$$. Note that the derivative of softplus is the logistic function $$g'(x) = \frac{e^x}{1+e^{x}} = \frac{1}{1+e^{-x}}$$
+        \begin{center}
+            \begin{tikzpicture}
+                \begin{axis}[
+                    axis lines = middle,
+                    xlabel = \(x\),
+                    ylabel = {\(g(x)\)},
+                    xmin = -4, xmax = 4,
+                    ymin = -1, ymax = 5,
+                    xtick={-4,-3,...,4},
+                    ytick={0,1,2,3,4,5},
+                    legend pos=outer north east,
+                    grid = both,
+                    domain=-4:4,
+                    samples=100,
+                ]
+                \addplot[blue, thick] {ln(1 + exp(x))};
+                \addlegendentry{Softplus \(g(x) = \log(1 + e^x)\)}
+                \end{axis}
+            \end{tikzpicture}
+        \end{center}
+    \end{enumerate}
+    \item Leaky ReLU\\ Leaky ReLU improves ReLU by allowing a small positive gradient for negative input values (e.g., $\alpha =  0.01$). 
+    \begin{align*}
+        g(x) &= \begin{cases} x & \text{ if } x \geq 0\\ \alpha x & \text{ otherwise} \end{cases}& g'(x) &=\begin{cases} 1 & \text{ if } x \geq 0\\ \alpha & \text{ otherwise} \end{cases}
+    \end{align*}
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{axis}[
+                axis lines = middle,
+                xlabel = \(x\),
+                ylabel = {\(g(x)\)},
+                xmin = -4, xmax = 4,
+                ymin = -1, ymax = 4,
+                xtick={-4,-3,...,4},
+                ytick={-0.1,0,1,2,3,4,5},
+                legend pos=outer north east,
+                grid = both,
+                domain=-4:4,
+                samples=100,
+            ]
+            \addplot[blue, thick] {x >= 0 ? x : 0.2 * x};
+            \addlegendentry{Leaky ReLU}
+            \end{axis}
+        \end{tikzpicture}
+    \end{center}
+
+    \item Exponential Linear Unit (ELU)\\ Exponential linear unit (ELU) has the following activation function: $$g(x) = \begin{cases} x& \text{ if }x \geq 0 \\ \alpha (e^x -1) & \text{ otherwise}\end{cases}$$, where $\alpha > 0$ is a hyperparameter (e.g., initialised to $1$). Note that the derivative of ELU is $$g'(x) = \begin{cases} 1& \text{ if }x \geq 0 \\ \alpha e^x = g(x) + \alpha & \text{ otherwise}\end{cases}$$. 
+    \begin{enumerate}
+        \item An advantage of ELU is that its mean activation value is close to $0$, which can be proved to enable faster learning. Since the softplus function always gives a positive value, it is not as good as ELU.
+        \item Unlike ReLu and its variants, the activation function of ELU is \emph{smooth everywhere}, include around $x = 0$, which speed up gradient descent because it does not bounce as much left and right of $x = 0$.
+        \item The main drawback of the ELU activation funciton is that it is slower to compute than ReLU and its variants due to its use of exponential function. This is not too much of a problem during training because the slower computation is compensated by the faster convergence, but testing it will be considerably slower than ReLU.
+        \item There is a variant of ELU, called scaled ELU (SELU), which has an additional hyperparameter $\lambda$ to achieve internal normalization. $$\text{SELU} = \lambda \text{ELU}(x) = \begin{cases} \lambda x& \text{ if }x \geq 0 \\ \lambda \alpha (e^x -1) & \text{ otherwise}\end{cases}$$
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Choosing activation functions}
+\begin{enumerate}
+    \item If runtime performance is NOT a concern, in general the relative performance of different choice is: ELU $>$ leaky ReLU (and its variants) $>$ ReLU $>$ $\tanh$ $>$ sigmoid
+    \item If runtime is an important factor to consider, leaky ReLU will be a better choice than ELU.
+    \item The hyperparameter in leaky ReLU and ELU may be learned to further boost the performance if the training set is sufficiently large (or else overfitting may occur). 
+\end{enumerate}
+
+\subsection{Weight initialization}
+\begin{enumerate}
+    \item Observations (which are consequences of using non-saturating activation function such as ReLU)
+        \begin{enumerate}
+            \item If the weights in a network start too small, then the signal shrinks as it passes through each layer until it is too tiny to be useful. 
+            \item If the weights in a network start too large, then the signal grows as it passes through each layer until it is too massive to be useful. 
+        \end{enumerate}
+    \item Xavier Initialisation 
+    \begin{enumerate}
+        \item The weight intialization strategy called Xavier initialization (named after the author's first name) makes sure the weights in a reasonable range of values so that the signals can reach deep into network. 
+        \item The main idea is to let the distribution governing the intialization of weights depend on the number of input connections and the number of output connections for the layer whose weights are being initialised. 
+        \item Let $\begin{cases}n_{\text{in}} &:= \text{number of input connections in a layer}\\
+        n_{\text{out}} &:= \text{number of output connections in a layer} \end{cases} $, the weights may be initialised randomly using a normal distribution $$\mathcal{N}(0, \dfrac{2}{n_{\text{in}} + n_{\text{out}}})$$ or a uniform distribution $$\mathcal{U}(- \sqrt{\dfrac{6}{n_{\text{in}} + n_{\text{out}}}}, +\sqrt{\dfrac{6}{n_{\text{in}} + n_{\text{out}}}})$$.
+    \end{enumerate}
+    \item He Initialisation
+    \begin{enumerate}
+        \item The He initialisation (named after the author's last name), also called Kaiming initialisation (named after the author's first name), is for ReLU and its variants, including ELU.
+        \item Similar to Xavier Initialisation, the weights may be intialsed using a normal distribution $$\mathcal{N}(0, \dfrac{4}{n_{\text{in}} + n_{\text{out}}})$$ or a uniform distribution $$\mathcal{U}(- \sqrt{\dfrac{12}{n_{\text{in}} + n_{\text{out}}}}, +\sqrt{\dfrac{12}{n_{\text{in}} + n_{\text{out}}}})$$.
+    \end{enumerate}
+\end{enumerate}
+\subsection{Batch Normalisation}
+\begin{enumerate}
+    \item Internal Covariate Shift
+    \begin{enumerate}
+        \item Although using a carefully designed weight initialisation strategy along with a non-saturating activation function such as leacky ReLU or ELU can significantly alleviate the vanishing/ exploring gradient problem at the beginning of training, this problem may still arise later during training.
+        \item The internal covariate shift problem refers that the distribution of the inputs of each layer changes during training  as the network weights of the previous layers change.
+    \end{enumerate}
+    \item Overviews of batch normalisation\\Batch normalisation is a technique for addressing the vanishing/ exploding gradient problem by addressing the more general internal covariate shift problem.
+    \begin{enumerate}
+        \item In a way, batch normalisation can be seen as extending the idea of normalising the raw input to the upper layers of the network
+        \item Before applying the activation function of each layer, the mean and variance of the inputs over the current mini-batch are evaluated to zero-center and normalise the inputs by the evaluated variance. (Hence, the name "batch" normalisation).
+        \item Two new parameters $\gamma, \beta$, one for scaling and the other for shifting, are learnt for each layer to restore its representation power.
+        \item Unlike normalising the input which are done for the whole batch, batch normalisation does it for each mini-batch separately.
+        \item While batch normalisation is generally quite effective, the true reason why and how it works is still not fully understood.
+    \end{enumerate}
+    \item Transform with Learning Parameters
+    \begin{enumerate}
+        \item Batch normalising transform applied over a mini-batch
+        \begin{algorithm}
+            \caption{Batch Normalising Transform}
+            \begin{algorithmic}[1]
+                \State \textbf{Input}: Values of $x$ over a mini-batch: $\mathcal{B} = \{x_{1 \cdots m}\}$
+                \State \textbf{Output}: $\{y_i = \text{BN}_{\gamma, \beta}(x_i)\}$\\
+                $\mu_{\mathcal{B}} \gets \dfrac{1}{m} \sum_{i=1}^{m} x_i$ \Comment{mini-batch mean}\\
+                $\sigma_{\mathcal{B}}^2 \gets \dfrac{1}{m} \sum_{i=1}^{m} (x_i - \mu_{\mathcal{B}})^2$ \Comment{mini-batch variance}\\
+                $\hat{x}_i \gets \dfrac{x_i - \mu_{\mathcal{B}}}{\sqrt{\sigma_{\mathcal{B}}^2 + \epsilon}}$ \Comment{normalise}\\
+                $y_i \gets \gamma \hat{x}_i + \beta \equiv \text{BN}_{\gamma, \beta}(x_i)$ \Comment{scale and shift}
+            \end{algorithmic}
+        \end{algorithm}
+        \item The transform can be implemented by introducing an additional layer with learnable parameters $\gamma, \beta$.
+        \item With batch normalisation, the vanishing gradient problem can be significantly reduced even when saturating activation functions such as the sigmoid and hyperbolic tangent functions are used without relying on carefully designed weight initialisation and regularisation.
+    \end{enumerate}
+    \item Batch normalisation during prediction
+    \begin{enumerate}
+        \item Like dropout, batch normalisation has different computation results in training and prediction modes.
+        \item During training, normalisation is based on the mini-batch statistics.
+        \item During prediction, normalisation is based on the dataset statistics (i.e., the whole dataset).
+    \end{enumerate}
+\end{enumerate}
+\subsection{Dropout}
+\begin{enumerate}
+    \item Dropout is a regularisation technique to prevent overfitting.
+    \item At each training step, each hidden unit or input has a probability $p$ of being temporarily dropped out (i.e., ignored during this training step, but it may become active again during the next step). 
+    \item The hyperparameter $p$, called the dropout rate, is typically set to $0.5$ (but other values are also possible, even with different values for different layers). Sometimes it is more convenient to refer to the keep probability with is equal to $1-p$. 
+    \item In general, a higher dropout rate is used if more serious overfitting is observed and for layers with more units (and hence more parameters to estimate).
+    \item Dropout is \emph{only applied during training} but not during testing.
+    \item Dropout can also be applied to connections (i.e., weights), but we will focus on dropping out units here.
+    \item Like L1/ L2 regularisation, dropout is only applied to the non-bias units.
+    \item Justifications of dropout
+    \begin{enumerate}
+        \item Since hidden units and inputs are dropped out randomly, the network need to learn to be more robust (i.e., less sensitive to slight changes in the inputs) by replying on more incoming units or inputs rather than just a few, effective spreading out the weights to more units.
+        \item An alternative way is to view dropout as \emph{emsemble learning}, in that each training step "generates" one of $2^{N}$ possible networks, where $N$ is the total number of droppable units or inputs, and trains the network on one example from the training set. The resulting neural network is essentially an emsemble of a large number of smaller networks.
+    \end{enumerate}
+    \item Since dropout is not applied during testing, a hidden unit will on average be connected to $\dfrac{1}{1-p}$ times as many inputs as it was during training. There are two alternative methods to deal with this problem.
+    \begin{enumerate}
+        \item Multiply the input weights of each unit by the keep probability $1-p$ after training.
+        \item (Inverted dropout) Divide the output of each unit by the keep probability during training. 
+    \end{enumerate}
+    Strictly speaking, these two methods are not equivalent but they both work well. Specifically, nothing needs to be done during testing and hence inference will not be slowed down.
+\end{enumerate}
+\subsection{Data Augmentation}
+\begin{enumerate}
+    \item Overfitting can be reduced by having more training data, but it is not always possible to get more labelled training examples. 
+    \item Data augmentation is a regularisation technique that generates new, synthetic training instances from existing ones to increase the size of the training set effectively.
+    \item Data augmentation aims to explicitly let the model know the allowed invariances.
+    \item Instead of wasting storage space and network bandwidth, it is preferable to generate new training instances \emph{on the fly} during training.
+    \item Example: Image Data
+    \begin{enumerate}
+        \item Some commonly used operations:
+    \begin{enumerate}
+        \item Translation, rotation, or rotation by various amounts
+        \item Lighting with varous contrasts
+        \item Cropping 
+        \item Flipping horizontally (but note that it is not suitable for some image-based applications such as character recognition).
+    \end{enumerate}
+    \item Some deep learning frameworks such as \texttt{TensorFlow} provide image manipulation operations for generating new training instances efficiently on the fly.
+    \item Some generative models (such as GAN) and generative AI tools may also be used for data augmentation.
+    \end{enumerate}
+\end{enumerate}
+\subsection{Optimizers}
+\begin{enumerate}
+    \item AdaGrad
+    \begin{enumerate}
+        \item Recall the ordinary Stochastic Gradient Descent (SGD): $$\mathbf{w} \gets \mathbf{w} - \eta \nabla_{\mathbf{w}} L$$, where $\nabla$ denotes the vector differential operator. 
+        \item AdaGrad improves SGD using an adaptive learning rate which decays faster for steeper dimensions.
+        \begin{align*}
+            \mathbf{s} &\gets \mathbf{s} + \nabla_{\mathbf{w}} L \circ \nabla_{\mathbf{w}} L\\
+            \mathbf{w} &\gets \mathbf{w} - \eta \nabla_{\mathbf{w}} L \oslash \sqrt{\mathbf{s + \epsilon}}
+        \end{align*}, where $\circ$ denotes the Hadamard product (a.k.a. elementwise multiplication), $\oslash$ denotes the Hadamard division (a.k.a. elementwise division), and $\mathbf{\epsilon}$ is a smoothing term with a small value (e.g., $10^{-10}$) for all dimensions to avoid division by $0$.
+        \item The first step of AdaGrad accumulates the square of the gradients into vector $\mathbf{s}$: a dimension of $\mathbf{s}$ will become larger and larger if the loss function is steep along that dimension.
+        \item The second step is similar to SGD except that there is a scaling factor $\sqrt{\mathbf{s + \epsilon}}$: a dimension will decay its learning rate faster if the loss function is steep along that dimension. 
+        \item With the adaptive learning rate (without requiring manual training), AdaGrad helps point the result updates more directly towards the global optimum.
+        \item Although AdaGrad performs well for simple quadratic problems, it often stops too early before reaching the global optimum when used for training neural networks.
+    \end{enumerate}
+    \item RMSProp
+    \begin{enumerate}
+        \item To overcome the problem of AdaGrad which decays too fast, RMSProp does not accumulate all the gradient from the beginning but only from the recent iterations by introducing exponential decay in the first step. 
+        \begin{align*}
+            \mathbf{s} &\gets \beta \mathbf{s} + (1-\beta) \nabla_{\mathbf{w}} L \circ \nabla_{\mathbf{w}} L\\
+            \mathbf{w} &\gets \mathbf{w} - \eta \nabla_{\mathbf{w}} L \oslash \sqrt{\mathbf{s + \epsilon}}
+        \end{align*}, where the decay rate $\beta$ is typically set to $0.9$.
+        \item If we explicitly add a time step as subscript and use $\mathbf{g}$ to denote $\nabla_{\mathbf{w}} L \circ \nabla_{\mathbf{w}} L$, the first step of RMSProp can be expressed as the recurrence relation $\mathbf{s}_{t} = \beta \mathbf{s}_{t-1} + (1 - \beta) \mathbf{g}_{t}$. Iterating this recurrence yields the following: $$\mathbf{s}_{t} = \beta^t + (1-\beta)(\beta^{t -1} \mathbf{g}_1 + \beta^{t -2} \mathbf{g}_2 + \cdots + \beta \mathbf{g}_{t-1} + \mathbf{g}_t) = \beta^t + \sum_{i=1}^{t} \beta^{t-i} \mathbf{g}_{i}$$
+    \end{enumerate}
+    \item Adam (adaptive moment estimation)
+    \begin{enumerate}
+        \item Adam combines the idead of momentum and RMSProp.
+        \begin{enumerate}
+            \item Like momentum, Adam keeps track of an exponential decaying average of the past gradients.
+            \item Like RMSProp, it keeps track of an exponential decaying average of the past squared gradients.
+        \end{enumerate}
+        \begin{align*}
+            \mathbf{\Delta w} &\gets \beta_1 \mathbf{\Delta w} - (1-\beta_1 \mathbf{\nabla_{w} L})\\
+            \mathbf{s} &\gets \beta_2 \mathbf{s} + (1-\beta_2) \nabla_{\mathbf{w}} L \circ \nabla_{\mathbf{w}} L\\
+            \mathbf{\Delta w} &\gets \dfrac{\mathbf{\Delta w}}{1 - \beta_1} & \mathbf{s} &\gets \dfrac{\mathbf{s}}{1 - \beta_2}\\
+            \mathbf{w} &\gets \mathbf{w} + \eta \mathbf{\Delta w} \oslash \sqrt{\mathbf{s + \epsilon}}
+        \end{align*}, where $t$ is the iteration number. The third step is for bias correction because the running averages are initialized to $0$.
+        
+    \end{enumerate}
+    \item[] \emph{Remarks}: \begin{enumerate}
+        \item Although Adam generally works well and is faster than other methods, a study showed that adaptive optimization methods including AdaGrad, RMSProp and Adam can give solutions that generalize poorly on some data sets.
+        \item So there is no single method that is always the best.
+    \end{enumerate}
 \end{enumerate}
 \end{document}
